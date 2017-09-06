@@ -26,16 +26,29 @@ struct AppUtility {
   }
   
 }
+
+extension UIImage{
+  convenience init(view: UIView) {
+    UIGraphicsBeginImageContextWithOptions(view.bounds.size, view.isOpaque, 0.0)
+    view.drawHierarchy(in: view.bounds, afterScreenUpdates: false)
+    let image = UIGraphicsGetImageFromCurrentImageContext()
+    UIGraphicsEndImageContext()
+    self.init(cgImage: (image?.cgImage)!)
+  }
+}
+
 class ViewController: UIViewController, UIGestureRecognizerDelegate {
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    // Do any additional setup after loading the view, typically from a nib.
     
+    if UIDevice.current.userInterfaceIdiom == .phone {
+      AppUtility.lockOrientation(.portrait, andRotateTo: .portrait)
+    }
   }
-
+  
   @IBAction func onAddViewBtnPressed(_ sender: Any) {
-    let newView = UIView(frame: CGRect(origin: CGPoint(x: self.view.center.x - 150, y: self.view.center.y - 150), size: CGSize(width: 150, height: 150)))
+    let newView = UIView(frame: CGRect(origin: CGPoint(x: self.view.center.x - 75, y: self.view.center.y - 75), size: CGSize(width: 150, height: 150)))
     
     newView.backgroundColor = getRandomColor()
     
@@ -47,10 +60,22 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
     pinchGesture.delegate = self
     let rotationGesture = UIRotationGestureRecognizer(target: self, action: #selector(ViewController.handelRotate(_:)))
     rotationGesture.delegate = self
+    let tapGesture = UITapGestureRecognizer(target: self, action: #selector(ViewController.handelTap(_:)))
+    tapGesture.delegate = self
     
     newView.addGestureRecognizer(panGesture)
     newView.addGestureRecognizer(pinchGesture)
     newView.addGestureRecognizer(rotationGesture)
+    newView.addGestureRecognizer(tapGesture)
+
+  }
+  
+  @IBAction func onCaptureBtnPressed(_ sender: Any) {
+    
+    let image = UIImage(view: self.view)
+    
+    let activityViewController = UIActivityViewController(activityItems: [image], applicationActivities: nil)
+    self.present(activityViewController, animated: true, completion: nil)
 
   }
   
@@ -76,6 +101,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
     self.view.bringSubview(toFront: gestureView)
     gestureView.transform = gestureView.transform.rotated(by: sender.rotation)
     sender.rotation = 0.0
+  }
+  
+  @IBAction func handelTap(_ sender: UITapGestureRecognizer) {
+    guard let gestureView = sender.view else { return }
+    self.view.bringSubview(toFront: gestureView)
   }
   
   func getRandomColor() -> UIColor {
