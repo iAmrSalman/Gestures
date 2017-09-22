@@ -62,20 +62,34 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
     rotationGesture.delegate = self
     let tapGesture = UITapGestureRecognizer(target: self, action: #selector(ViewController.handelTap(_:)))
     tapGesture.delegate = self
+    let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(ViewController.handelLongPress(_:)))
+    longPressGesture.delegate = self
+    longPressGesture.minimumPressDuration = 1.0
     
     newView.addGestureRecognizer(panGesture)
     newView.addGestureRecognizer(pinchGesture)
     newView.addGestureRecognizer(rotationGesture)
     newView.addGestureRecognizer(tapGesture)
+    newView.addGestureRecognizer(longPressGesture)
 
   }
   
   @IBAction func onCaptureBtnPressed(_ sender: Any) {
     
-    let image = UIImage(view: self.view)
+    let logoImg = UIImageView(frame: CGRect(origin: CGPoint.init(x: 10, y: self.view.bounds.height - (#imageLiteral(resourceName: "logo").size.height + 10)), size: #imageLiteral(resourceName: "logo").size))
+    logoImg.image = #imageLiteral(resourceName: "logo")
     
-    let activityViewController = UIActivityViewController(activityItems: [image], applicationActivities: nil)
-    self.present(activityViewController, animated: true, completion: nil)
+    UIView.animate(withDuration: 0.0, animations: { 
+      self.view.addSubview(logoImg)
+    }) { (_) in
+      let image = UIImage(view: self.view)
+      
+      let activityViewController = UIActivityViewController(activityItems: [image], applicationActivities: nil)
+      activityViewController.completionWithItemsHandler = { _ in
+        logoImg.removeFromSuperview()
+      }
+      self.present(activityViewController, animated: true, completion: nil)
+    }
 
   }
   
@@ -106,6 +120,24 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
   @IBAction func handelTap(_ sender: UITapGestureRecognizer) {
     guard let gestureView = sender.view else { return }
     self.view.bringSubview(toFront: gestureView)
+  }
+  
+  @IBAction func handelLongPress(_ sender: UILongPressGestureRecognizer) {
+    guard let gestureView = sender.view else { return }
+    
+    let actionsheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+    
+    actionsheet.addAction(UIAlertAction(title: "Delete", style: .default, handler: { (_) in
+      UIView.animate(withDuration: 0.7, animations: {
+        gestureView.center.x += UIScreen.main.bounds.width * 1.5
+      }, completion: { (_) in
+        gestureView.removeFromSuperview()
+      })
+    }))
+    
+    actionsheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+    
+    self.present(actionsheet, animated: true, completion: nil)
   }
   
   func getRandomColor() -> UIColor {
