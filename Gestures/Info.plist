@@ -43,5 +43,7 @@
 	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>blah blah blah</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>blah blah blah</string>
 </dict>
 </plist>
